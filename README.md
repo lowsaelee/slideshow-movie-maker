@@ -7,4 +7,4 @@ Audio (mp3) duration pulled using Mutagen.
 
 imageWithBlurredBG.py
 
-Resizes an image to a desired video size and orientation keeping the original aspect ratio of image with gaps filled with blue.
+Resizes an image to a desired video size and orientation keeping the original aspect ratio of image with gaps filled with blur.
