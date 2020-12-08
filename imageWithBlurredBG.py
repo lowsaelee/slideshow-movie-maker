@@ -51,10 +51,13 @@ maxLength = 1280
 #1080p
 #minLength = 1080
 #maxLength = 1920
-#videoOrientation = "portrait"
-videoOrientation = "landscape"
+videoOrientation = "portrait"
+#videoOrientation = "landscape"
+
 
 for pic in imageFiles:
+    landscapeBlurTop = False
+    portraitBlurSide = False
     fullpathFilename = pictureDir + "\\" + pic
     img = cv2.imread(fullpathFilename, cv2.IMREAD_UNCHANGED)
     print('Original Dimensions : ',img.shape)
@@ -66,11 +69,27 @@ for pic in imageFiles:
         width = minLength
         print(height,'x',width)
         dim = (width, height)
-    else:
+    if videoOrientation == "landscape":
         imgOrientation = "landscape"
         print("Image is in landscape")
         height = minLength
         width = int(img.shape[1]*(1+((minLength-img.shape[0])/(img.shape[0]))))
+        print(height,'x',width)
+        dim = (width, height)
+    if videoOrientation == "landscape" and width > maxLength:
+        landscapeBlurTop = True
+        print("landscapeblurtop=True")
+        print("Image is in landscape")
+        height = int(img.shape[0]*(abs(maxLength-img.shape[1])/img.shape[1]))
+        width = maxLength
+        print(height,'x',width)
+        dim = (width, height)
+    if videoOrientation == "portrait" and height > maxLength:
+        portraitBlurSide = True
+        print("portraitBlurSide=True")
+        print("Image is in portrait")
+        height = maxLength
+        width = int(img.shape[1]*(abs(maxLength-img.shape[0])/img.shape[0]))
         print(height,'x',width)
         dim = (width, height)
       
@@ -87,20 +106,35 @@ for pic in imageFiles:
     
     print('Resized Dimensions : ',resized.shape)
     
-    
     # Blurs the top
-    if imgOrientation == "portrait":
+    if imgOrientation == "portrait" and portraitBlurSide == False:
         centerLeft = int((maxLength-height)/2)
         for i in range(height):
             for j in range(int(width)):
                 resizedBlur[i+centerLeft][j] = resized[i][j]
     # Blurs the side
-    if imgOrientation == "landscape":
+    if imgOrientation == "landscape" and landscapeBlurTop == False:
         centerLeft = int((maxLength-width)/2)
         for i in range(height):
             for j in range(width):
                 resizedBlur[i][j+centerLeft] = resized[i][j]
     
+    # Blurs the top and bottom on landscape orientation
+    if landscapeBlurTop:
+        print('Blurs the top and bottom on landscape orientation')
+        centerLeft = int((minLength-height)/2)
+        for i in range(height):
+            for j in range(width):
+                resizedBlur[i+centerLeft][j] = resized[i][j]
+    
+    # Blurs the side on portrait orientation
+    if portraitBlurSide == True:
+        print('Blurs the side on portrait orientation')
+        centerLeft = int(abs(minLength-width)/2)
+        for i in range(height):
+            for j in range(width):
+                resizedBlur[i][j+centerLeft] = resized[i][j]
+
     filename = 'output\\' + pic
     print(filename)
     cv2.imwrite(filename, resizedBlur)
